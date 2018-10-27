@@ -1,0 +1,48 @@
+---
+- hosts: webservers
+  sudo: yes
+  vars:
+    http_port: 80
+    doc_root: /var/www/html/ansible
+    doc_dir: /var/www/html/ansible
+    max_clients: 5
+
+  vars_prompt:
+    - name: username
+      prompt: what is your name? whatis your Quest? whatis your fav color?
+
+  tasks:
+  - name: Ensure that Apache is installed
+    yum: name=httpd state=present
+    when: ansible_os_family == "RedHat"
+
+  tasks:
+  - name: Start Apache Service
+    service: name=httpd enabled=yes state=started
+  
+  - name: Deploy config file
+    template: src=templates/httpd.j2 dest=/etc/httpd.conf
+    notify: 
+    - Restart Apache
+
+  - name: Copy Site Files
+    template: src=templates/index.j2 dest={{ doc_root }}/index.html
+  handlers:
+    - name: Restart Apache
+      service: name=httpd state=restarted
+
+- hosts: dbservers
+  sudo: yes
+
+  tasks:
+  - name: Ensure myslq is installed
+    yum: name=mysql-server state=present
+  - name: Start Mysql
+    service: name=mysqld state=started
+
+- hosts: webservers:dbservers
+  sudo: yes
+
+  tasks:
+  - name: Stop IPTABLES NOW!!
+    service: name=iptables state=stopped
