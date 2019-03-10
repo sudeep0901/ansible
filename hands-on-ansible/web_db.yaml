@@ -1,0 +1,33 @@
+---
+- hosts: webservers
+  sudo: yes
+  
+  vars_prompt:
+   - name: "sitename"
+     prompt: "What is new sitename?"
+
+  tasks:
+  - debug: msg="The name is {{sitename}}"
+
+  tasks:
+  - name: Ensure that Apache is installed
+    yum: name=httpd state=present
+
+  - name: Start Apache Service
+    service: name=httpd enabled=yes state=started
+
+- hosts: dbservers
+  sudo: yes
+
+  tasks:
+  - name: Ensure myslq is installed
+    yum: name=mysql-server state=present
+  - name: Start Mysql
+    service: name=mysqld state=started
+
+- hosts: webservers:dbservers
+  sudo: yes
+
+  tasks:
+  - name: Stop IPTABLES NOW!!
+    service: name=iptables state=stoppped
